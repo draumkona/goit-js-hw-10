@@ -2,42 +2,49 @@
 import './css/styles.css';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
+import { fetchCountries } from "./fetchCountries";
 
 //zmienne
 const DEBOUNCE_DELAY = 300;
 const searchBox = document.querySelector("#search-box");
-// const searchParams = new URLSearchParams({
-//     _name: name.official,
+const countryInfo = document.querySelector(".country-info");
+const countryList = document.querySelector(".country-list");
 
-// });
+
+let informationAboutCountry = ({ name, capital, population, flags, languages }) => {
+    const languageList = languages.map(lang => lang.name).join(', ');
+    console.log(languageList)
+    
+}
 
 //funkcja wyszukiwania nazwy
 function searchCountry() {
-    let name = searchBox.value;
+    let searchName = searchBox.value;
+    const nameOfCountry = searchName.trim();
 
-    if (name.length <= 1) {
+    if (nameOfCountry.length === 0) {
+        // countryInfo.innerHTML = '';
+        // countryList.innerHTML = '';
+        return
+    }
+    if (nameOfCountry.length <= 1) {
         Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
     }
-    fetchCountries(name)
+    else {
+        fetchCountries(nameOfCountry)
+            .then(countries => {
+                if (countries.length > 10) {
+                    Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
+                    console.log("więcej niż 10")
+                }
+                if (countries.length === 1) {
+                    console.log("działa ,", countries.languages)
+                }
+                else {
+                    
+                }
+        })
+    }
 };
-
-//fetch 
-function fetchCountries(name) {
-    return fetch(`https://restcountries.com/v3.1/name/${name}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(response.status);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("data:" + data)
-        })
-        .catch(error => {
-           Notiflix.Notify.failure(`Oops, there is no country with that name.`)
-        })
-};
-    
-
 
 searchBox.addEventListener("input", debounce(searchCountry, DEBOUNCE_DELAY));   
